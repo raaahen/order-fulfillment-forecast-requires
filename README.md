@@ -23,7 +23,8 @@
 ## Примерный API
 
 1. /api/v1/order_fulfillment_forecast (запрос прогноза по детально)
-**REQUEST** :
+**REQUEST**:
+```
 {
     order_id : OrderId,
     order_line : OrderLine,
@@ -32,8 +33,10 @@
     shipping_method : SM,
     sku_id : SkuId
 }
+```
 
 **RESPONCE** (операции будут согласно table_data billing_op_type):
+```
 {
     op_pallet_pick : 0.5,
     op_carton_pick : 0.4,
@@ -43,6 +46,7 @@
     op_load_deliver : 0.5,
     op_cont_deliver : 0.02
 }
+```
 
 2. /api/v1/machine_learning_by_order - метод для обучения
 REQUEST и RESPONCE - аналогичные
