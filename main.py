@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify
 from sklearn.preprocessing import LabelEncoder
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
 import numpy as np
 import joblib
 import os
@@ -14,9 +13,7 @@ label_encoders = {}
 vectorizer = TfidfVectorizer(analyzer='char', ngram_range=(2, 3))
 model = None
 model_file = "model.joblib"
-
-# Список операций
-operation_names = ['op_pallet_pick', 'op_carton_pick', 'op_unit_pick', 'op_load_settle', 'op_cont_settle', 'op_load_deliver', 'op_cont_deliver']
+all_operations = set()  # Набор всех известных операций
 
 # Функция для кодирования категориальных данных
 def encode_categorical_data(records):
@@ -25,7 +22,7 @@ def encode_categorical_data(records):
     for record in records:
         encoded_record = {}
         for key, value in record.items():
-            if key != 'sku_id':  # Исключаем SKU
+            if key != 'sku_id':  # Исключаем SKU, он кодируется через TF-IDF
                 if key not in label_encoders:
                     label_encoders[key] = LabelEncoder()
                     label_encoders[key].fit([r[key] for r in records])
@@ -46,26 +43,36 @@ def load_model():
     if os.path.exists(model_file):
         model = joblib.load(model_file)
 
+# Обработка данных для динамического расширения признаков
+def prepare_data(data):
+    global label_encoders, all_operations
+
+    # Декодирование данных заказа
+    encoded_data = encode_categorical_data(data)
+    sku_ids = [record['sku_id'] for record in data]
+    sku_vectors = vectorizer.fit_transform(sku_ids)
+
+    # Преобразование категориальных данных и SKU в векторы
+    X_categorical = np.column_stack([list(record.values())[:-1] for record in encoded_data])
+    X = np.hstack([X_categorical, sku_vectors.toarray()])
+
+    return X
+
 # Маршрут для прогноза
 @app.route('/api/v1/order_fulfillment_forecast', methods=['POST'])
 def order_fulfillment_forecast():
     load_model()  # Загружаем модель, если она существует
     if model is None:
         return jsonify({"error": "Модель не обучена."}), 400
-    
+
     # Получаем данные из запроса
-    data = request.json
+    data = request.json.get("order")
+    
     if not isinstance(data, list):
         data = [data]
-    
-    # Кодируем категориальные данные и SKU
-    encoded_data = encode_categorical_data(data)
-    sku_ids = [record['sku_id'] for record in data]
-    sku_vectors = vectorizer.transform(sku_ids)
 
-    # Преобразуем категориальные данные и векторы SKU
-    X_categorical = np.column_stack([list(record.values())[:-1] for record in encoded_data])
-    X_new = np.hstack([X_categorical, sku_vectors.toarray()])
+    # Обработка данных заказа
+    X_new = prepare_data(data)
 
     # Предсказание
     predictions = model.predict(X_new)
@@ -73,28 +80,31 @@ def order_fulfillment_forecast():
     # Формируем JSON-ответ
     results = []
     for i, prediction in enumerate(predictions):
-        result = {operation_names[j]: prediction[j] for j in range(len(operation_names))}
-        results.append({"order": data[i], "predicted_operations": result})
+        result = {operation: prediction[j] for j, operation in enumerate(all_operations)}
+        results.append({"order_id": data[i]["order_id"], "predicted_operations": result})
     
-    return jsonify(results)
+    return jsonify({"forecast": results})
 
 # Маршрут для обучения или дообучения
 @app.route('/api/v1/machine_learning_by_order', methods=['POST'])
 def machine_learning_by_order():
+    global all_operations
+
     # Получаем данные для обучения
     data = request.json.get("data")
-    y = request.json.get("target")
-    
-    # Кодируем данные
-    encoded_data = encode_categorical_data(data)
-    sku_ids = [record['sku_id'] for record in data]
-    sku_vectors = vectorizer.fit_transform(sku_ids)
+    target = request.json.get("target")
 
-    # Преобразуем данные
-    X_categorical = np.column_stack([list(record.values())[:-1] for record in encoded_data])
-    X = np.hstack([X_categorical, sku_vectors.toarray()])
+    # Обрабатываем все новые типы операций
+    for target_entry in target:
+        all_operations.update(target_entry.keys())
 
-    # Если модель существует, то дообучаем, иначе обучаем с нуля
+    # Кодируем данные заказа
+    X = prepare_data(data)
+
+    # Преобразуем операции в массив для обучения модели
+    y = np.array([[target_entry.get(op, 0) for op in all_operations] for target_entry in target])
+
+    # Если модель существует, дообучаем, иначе обучаем с нуля
     if model is not None:
         model.fit(X, y)
     else:
