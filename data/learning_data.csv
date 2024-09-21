@@ -1,16 +1,3 @@
-
-SQL*Plus: Release 19.0.0.0.0 - Production on Tue Sep 17 14:38:49 2024
-Version 19.3.0.0.0
-
-Copyright (c) 1982, 2019, Oracle.  All rights reserved.
-
-Last Successful login time: Tue Sep 17 2024 14:38:22 +03:00
-
-Connected to:
-Oracle Database 19c Standard Edition 2 Release 19.0.0.0.0 - Production
-Version 19.3.0.0.0
-
-
 "ID","TYPE","PROCESSING_METHOD","DAY","SHIFT","DETAILS","SKU_ID","QTY","op_pallet_pick","op_cont_pick","op_cont_deliver","op_cont_aboard","op_load_deliver"
 245673,"3","b","THU","D",4,1033531,450,1,0,0,0,4
 245673,"3","b","THU","D",4,1032755,1200,1,0,0,0,4
@@ -74986,8 +74973,3 @@ Version 19.3.0.0.0
 738276,"0","b","TUE","D",373,1032955,6,0,5,1.95710456,0,0
 738276,"0","b","TUE","D",373,1033577,12,0,1,1.95710456,0,0
 738276,"0","b","TUE","D",373,1033088,12,0,4,1.95710456,0,0
-
-74974 rows selected.
-
-Disconnected from Oracle Database 19c Standard Edition 2 Release 19.0.0.0.0 - Production
-Version 19.3.0.0.0
