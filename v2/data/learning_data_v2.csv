@@ -1,4 +1,4 @@
-"ID","TYPE","PROCESSING_METHOD","DAY","SHIFT","DETAILS","SKU_ID","QTY","op_pallet_pick","op_cont_pick","op_cont_deliver","op_cont_aboard","op_load_deliver"
+"id","type","processing_method","day","shift","details","sku_id","qty","op_pallet_pick","op_cont_pick","op_cont_deliver","op_cont_aboard","op_load_deliver"
 245673,"3","b","THU","D",4,1033531,450,1,0,0,0,4
 245673,"3","b","THU","D",4,1032755,1200,1,0,0,0,4
 245673,"3","b","THU","D",4,1033157,3600,1,0,0,0,4
