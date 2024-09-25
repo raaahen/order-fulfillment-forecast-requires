@@ -18,7 +18,7 @@ if os.path.exists(model_path) and os.path.exists(label_encoders_path):
     label_encoders = joblib.load(label_encoders_path)
 else:
     model = MultiOutputRegressor(RandomForestRegressor(n_estimators=100))
-    label_encoders = {'type_encoder': None, 'pm_encoder': None}
+    label_encoders = {'type_encoder': None, 'processing_method_encoder': None}
 
 def safe_transform(label_encoder, value, default_value):
     """
@@ -36,10 +36,10 @@ def predict():
     
     # Encode the input data, handling unknown values
     type_encoded = safe_transform(label_encoders['type_encoder'], data['type'], label_encoders['type_encoder'].classes_[0])
-    pm_encoded = safe_transform(label_encoders['pm_encoder'], data['processing_method'], label_encoders['pm_encoder'].classes_[0])
+    processing_method_encoded = safe_transform(label_encoders['processing_method_encoder'], data['processing_method'], label_encoders['processing_method_encoder'].classes_[0])
     
     # Prepare the input for the model
-    input_data = np.array([[type_encoded, pm_encoded, data['sku_id']]])
+    input_data = np.array([[type_encoded, processing_method_encoded, data['sku_id']]])
     
     # Make predictions
     predictions = model.predict(input_data)
@@ -63,7 +63,7 @@ def fine_tune():
 
     # Preprocess the new data (similar to initial training), handling unknown values
     new_data['type_encoded'] = new_data['type'].apply(lambda x: safe_transform(label_encoders['type_encoder'], x, label_encoders['type_encoder'].classes_[0]))
-    new_data['processing_method_encoded'] = new_data['processing_method'].apply(lambda x: safe_transform(label_encoders['pm_encoder'], x, label_encoders['pm_encoder'].classes_[0]))
+    new_data['processing_method_encoded'] = new_data['processing_method'].apply(lambda x: safe_transform(label_encoders['processing_method_encoder'], x, label_encoders['processing_method_encoder'].classes_[0]))
 
     # Features and target variables
     X_new = new_data[['type_encoded', 'processing_method_encoded', 'sku_id']]

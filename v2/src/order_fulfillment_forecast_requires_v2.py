@@ -33,12 +33,12 @@ def predict():
     
     # Encode the input data
     type_encoded = label_encoders['type_encoder'].transform([data['type']])[0]
-    pm_encoded = label_encoders['pm_encoder'].transform([data['processing_method']])[0]
+    processing_method_encoded = label_encoders['processing_method_encoder'].transform([data['processing_method']])[0]
     day_encoded = label_encoders['day_encoder'].transform([data['day']])[0]
     shift_encoded = label_encoders['shift_encoder'].transform([data['shift']])[0]
     
     # Prepare the input for the model
-    input_data = np.array([[type_encoded, pm_encoded, day_encoded, shift_encoded, data['details'], data['sku_id'], data['qty']]])
+    input_data = np.array([[type_encoded, processing_method_encoded, day_encoded, shift_encoded, data['details'], data['sku_id'], data['qty']]])
     
     # Make predictions
     predictions = model.predict(input_data)
@@ -71,7 +71,7 @@ def fine_tune():
     y_new = new_data[['op_pallet_pick', 'op_cont_pick', 'op_cont_deliver', 'op_cont_aboard', 'op_load_deliver']]
 
     # Fine-tune the model
-    model.estimator.fit(X_new, y_new)
+    model.fit(X_new, y_new)
 
     # Save the updated model and encoders
     joblib.dump(model, model_path)
