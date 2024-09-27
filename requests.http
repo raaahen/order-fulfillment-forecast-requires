@@ -1,0 +1,24 @@
+### v1
+curl -X POST http://127.0.0.1:5000/predict -H "Content-Type: application/json" -d '{
+    "id": 53452,
+    "type": 0,
+    "processing_method": "b",
+    "sku_id": 1034660
+}'
+
+###
+
+### v2
+
+curl -X POST http://127.0.0.1:5000/predict -H "Content-Type: application/json" -d '{
+    "id": 0,
+    "type": "0",
+    "processing_method": "a",
+    "day" : "SAT",
+    "shift" : "D",
+    "details" : 8,
+    "sku_id": 1033586,
+    "qty" : 6
+}'
+
+###
